@@ -17,7 +17,8 @@
 # #  쿼리
 #
 # # crawling start
-#
+# now = datetime.datetime.now()
+# print(f"시작시간 : {now}")
 # options = webdriver.ChromeOptions()
 # # options.add_argument('--headless')
 # # options.add_argument('--no-sandbox')
@@ -31,134 +32,111 @@
 # driver.get(url)
 # time.sleep(3)
 # wait = WebDriverWait(driver, 10)
+# asd = driver.page_source
+# so = BeautifulSoup(asd, "html.parser")
+# # sdu2 = so.select("#gnbAllMenu > ul > li > div > ul > li")
+# sdu2 = so.select("#gnbAllMenu > ul > li:nth-child(1) > div > ul > li")
+# category = []
+# for cate in sdu2[0:]:
+#     a = cate.select_one('a').text
+#     b = cate.select_one('a')['data-attr']
+#     c = cate.select_one('a')['href']
+#     category.append({
+#         'Depth2': b,
+#         'Depth3': a,
+#         'run': c
+#     })
+#
 # Depth1 = driver.find_element(By.CSS_SELECTOR, "#btnGnbOpen")
 # Depth1.send_keys(Keys.ENTER)
 #
-# asd = driver.page_source
-# so = BeautifulSoup(asd, "html.parser")
-# Depth2 = wait.until(
-#     EC.presence_of_element_located((By.CSS_SELECTOR,
-#                                     "#gnbAllMenu > ul > li:nth-child(1) > div:nth-child(2) > ul:nth-child(2) > li:nth-child(1) > a")))
-# Depth2.click()
-# Depth3 = wait.until(
-#     EC.presence_of_element_located((By.CSS_SELECTOR, "#Contents > ul.cate_list_box > li:nth-child(2) > a")))
-# Depth3.click()
 #
-# #Contents > ul.cate_list_box
-# time.sleep(3)
-# html = driver.page_source
-# soup = BeautifulSoup(html, "html.parser")
-# qwe = soup.select("#Contents > ul.cate_list_box > li")
-# print(len(qwe))
-# ab = []
-# for qwes in qwe[1:]:
-#     a = qwes.select_one("a")
-#     print(a)
-#     if a is not None:
-#         ab.append({'asdasd': a})
-# print(f"avbb : {ab}")
-# print(f"avbb : {len(ab)}")
-# # aav = driver.find_element(By.CLASS_NAME, ab[2]['class'])
-# print(ab[2]['class'])
-# ins = {}
-# aa = soup.select_one("#Contents > p > span").text
-# f = 0
-# s = 7
-# u = 0
-# k = 2
-# uu = 0
-# # # 1. 스킨케어
-# # for i in range(int(aa)):
-# #     if f == 4:
-# #         s += 1
-# #         u = 0
-# #         f = 0
-# #     if s > 12:
-# #         try:
-# #             if k > 10 and uu == 0:
-# #                 qwer = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,
-# #                                                                   "#Container > div.pageing > a.next")))
-# #                 qwer.click()
-# #                 time.sleep(3)
-# #                 k = k - 8
-# #                 s = 7
-# #                 uu = 1
-# #                 print(f"초기화된 k : {k}")
-# #                 html = driver.page_source
-# #                 soup = BeautifulSoup(html, "html.parser")
-# #             elif k > 12 and uu == 1:
-# #                 qwer = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,
-# #                                                                   "#Container > div.pageing > a.next")))
-# #                 qwer.click()
-# #                 time.sleep(3)
-# #                 k = k - 8
-# #                 s = 7
-# #                 html = driver.page_source
-# #                 soup = BeautifulSoup(html, "html.parser")
-# #             else:
-# #                 next_page = wait.until(
-# #                     EC.presence_of_element_located((By.CSS_SELECTOR,
-# #                                                     "#Container > div.pageing > a:nth-child(" + str(k) + ")")))
-# #                 next_page.click()
-# #                 time.sleep(3)
-# #                 html = driver.page_source
-# #                 soup = BeautifulSoup(html, "html.parser")
-# #                 s = 7
-# #                 k += 1
-# #         except TimeoutException:
-# #             pass
-# #
-# #     tag = soup.select_one("#Contents > ul:nth-child(" + str(s) + ") > li:nth-child(" + str(u + 1) + ")")
-# #     img_src = tag.select_one("div > a > img")['src'] if tag.select_one(" div > a > img") else None
-# #     info = tag.select_one("div > a")['href'] if tag.select_one("div > a") else None
-# #     brand = tag.select_one("div > div > a > span").text if tag.select_one("div > div > a > span") else None
-# #     product = tag.select_one("div > div > a > p").text if tag.select_one("div > div > a > p") else None
-# #     price = tag.select_one("div > p.prd_price > span.tx_org > span").text if tag.select_one(
-# #         "div > p.prd_price > span.tx_org > span") else None
-# #     sale_price = tag.select_one("div > p.prd_price > span.tx_cur > span").text if tag.select_one(
-# #         "div > p.prd_price > span.tx_cur > span") else None
-# #     sale_yn = tag.select_one("div > p.prd_flag > span.icon_flag.sale").text if tag.select_one(
-# #         "div > p.prd_flag > span.icon_flag.sale") else None
-# #     coupon_yn = tag.select_one("div > p.prd_flag > span.icon_flag.gift").text if tag.select_one(
-# #         "div > p.prd_flag > span.icon_flag.gift") else None
-# #     delivery = tag.select_one("div > p.prd_flag > span.icon_flag.delivery").text if tag.select_one(
-# #         "div > p.prd_flag > span.icon_flag.delivery") else None
-# #
-# #     ins.update({
-# #         "img_src": img_src,
-# #         "info": info,
-# #         "brand": brand,
-# #         "product": product,
-# #         "price": price,
-# #         "sale_price": sale_price,
-# #         "sale_yn": sale_yn,
-# #         "coupon_yn": coupon_yn,
-# #         "delivery": delivery
-# #
-# #     })
-# #     # print(ins)
-# #     # print(i)
-# #     f += 1
-# #     u += 1
-# #
-# # # 2. 마스크팩
-# # # Container > div.pageing > a.next
-# # # 3. 클렌징
-# #
-# # # 4. 선케어
-# #
-# # # 5. 더모 코스메틱
-# #
-# # # 6. 메이크업
-# #
-# # # 7. 네일
-# #
-# # # 8. 바디케어
-# #
-# # # 9. 헤어케어
-# #
-# # # 10. 향수/디퓨저
-# #
-# # # 11. 미용소품
-# #
-# # # 12. 남성
+# def click_next_page(driver, kk):
+#     qwer = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,
+#                                                       "#Container > div.pageing > a:nth-child(" + str(kk) + ")")))
+#     qwer.click()
+#     time.sleep(3)
+#
+#
+# for i in range(len(category)):
+#     driver.execute_script(category[i]["run"])
+#     asd = driver.page_source
+#     so = BeautifulSoup(asd, "html.parser")
+#     qwe = so.select("#Contents > ul.cate_list_box > li > a")
+#     for j in range(2, len(qwe)):
+#         f = 0
+#         s = 7
+#         u = 0
+#         kk = 2
+#         uu = 0
+#         qw = 2
+#         Depth3 = wait.until(
+#             EC.presence_of_element_located(
+#                 (By.CSS_SELECTOR, "#Contents > ul.cate_list_box > li:nth-child(" + str(j) + ") > a")))
+#         Depth3.click()
+#         html = driver.page_source
+#         soup = BeautifulSoup(html, "html.parser")
+#         ins = {}
+#         aa = soup.select_one("#Contents > p > span").text
+#         for k in range(int(aa)):
+#             if f == 4:
+#                 s += 1
+#                 u = 0
+#                 f = 0
+#             if s > 12:
+#                 if kk > 10 and uu == 0:
+#                     click_next_page(driver, kk)
+#                     kk = kk - 8
+#                     s = 7
+#                     uu = 1
+#                     html = driver.page_source
+#                     soup = BeautifulSoup(html, "html.parser")
+#                 elif kk > 11 and uu == 1:
+#                     click_next_page(driver, kk)
+#                     kk = kk - 9
+#                     s = 7
+#                     html = driver.page_source
+#                     soup = BeautifulSoup(html, "html.parser")
+#                 else:
+#                     click_next_page(driver, kk)
+#                     html = driver.page_source
+#                     soup = BeautifulSoup(html, "html.parser")
+#                     s = 7
+#                     kk += 1
+#
+#             tag = soup.select_one("#Contents > ul:nth-child(" + str(s) + ") > li:nth-child(" + str(u + 1) + ")")
+#             img_src = tag.select_one("div > a > img")['src'] if tag.select_one(" div > a > img") else None
+#             info = tag.select_one("div > a")['href'] if tag.select_one("div > a") else None
+#             brand = tag.select_one("div > div > a > span").text if tag.select_one("div > div > a > span") else None
+#             product = tag.select_one("div > div > a > p").text if tag.select_one("div > div > a > p") else None
+#             price = tag.select_one("div > p.prd_price > span.tx_org > span").text if tag.select_one(
+#                 "div > p.prd_price > span.tx_org > span") else None
+#             sale_price = tag.select_one("div > p.prd_price > span.tx_cur > span").text if tag.select_one(
+#                 "div > p.prd_price > span.tx_cur > span") else None
+#             sale_yn = tag.select_one("div > p.prd_flag > span.icon_flag.sale").text if tag.select_one(
+#                 "div > p.prd_flag > span.icon_flag.sale") else None
+#             coupon_yn = tag.select_one("div > p.prd_flag > span.icon_flag.gift").text if tag.select_one(
+#                 "div > p.prd_flag > span.icon_flag.gift") else None
+#             delivery = tag.select_one("div > p.prd_flag > span.icon_flag.delivery").text if tag.select_one(
+#                 "div > p.prd_flag > span.icon_flag.delivery") else None
+#
+#             ins.update({
+#                 "img_src": img_src,
+#                 "info": info,
+#                 "brand": brand,
+#                 "product": product,
+#                 "price": price,
+#                 "sale_price": sale_price,
+#                 "sale_yn": sale_yn,
+#                 "coupon_yn": coupon_yn,
+#                 "delivery": delivery
+#             })
+#
+#             # print(f"{k}번째 : {s}  : src : {ins['img_src']}")
+#             # print(ins)
+#             # print(i)
+#             f += 1
+#             u += 1
+#
+# now2 = datetime.datetime.now()
+# print(f"종료시간 : {now2}")
