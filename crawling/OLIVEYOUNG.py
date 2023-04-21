@@ -67,7 +67,7 @@ for i in range(len(category)):
             EC.presence_of_element_located(
                 (By.CSS_SELECTOR, "#Contents > div.cate_align_box > div.count_sort.tx_num > ul > li:nth-child(3) > a")))
         max_view.click()
-        time.sleep(1)
+        time.sleep(3)
         html = driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         cate_count = soup.select_one("#Contents > p > span").text
@@ -81,17 +81,14 @@ for i in range(len(category)):
                 try:
                     link = driver.find_element(By.LINK_TEXT, str(page))
                     link.click()
-                    html = driver.page_source
-                    soup = BeautifulSoup(html, "html.parser")
-                    page += 1
-                    col = 7
+
                 except NoSuchElementException:
                     link = driver.find_element(By.CSS_SELECTOR, "#Container > div.pageing > a.next")
                     link.click()
-                    html = driver.page_source
-                    soup = BeautifulSoup(html, "html.parser")
-                    page += 1
-                    col = 7
+                html = driver.page_source
+                soup = BeautifulSoup(html, "html.parser")
+                page += 1
+                col = 7
             tag = soup.select_one("#Contents > ul:nth-child(" + str(col) + ") > li:nth-child(" + str(num + 1) + ")")
             ins = {
                 "img_src": tag.select_one("div > a > img")['src'] if tag.select_one("div > a > img") else None,
