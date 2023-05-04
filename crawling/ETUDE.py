@@ -71,6 +71,7 @@ for i in range(len(depth3)):
     tag = soup.select(
         "body > div > div > div > div > div > section > div > div > div > section > div > div > div > div > div > div > div > div")
     # print(tag)
+    # 추후 while로 변경
     for j in tag[0:]:
         src = j.select_one("div > div.product-element-top.wd-quick-shop > a > img")['src']
         model_src = j.select_one("div > div.product-element-top.wd-quick-shop > div.hover-img > a > img")['src']
@@ -81,7 +82,6 @@ for i in range(len(depth3)):
             'src': src, 'info': info, 'model_src': model_src, 'product': products, 'price': price
         }
         print(ins)
-    break
 # print(f"depth3 : {depth3}")
 
 time.sleep(10)

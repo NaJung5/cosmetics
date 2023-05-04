@@ -29,7 +29,8 @@ url = "https://www.ableshop.kr/"
 driver.get(url)
 time.sleep(3)
 try:
-    bt = driver.find_element(By.CSS_SELECTOR, "#popupEventBanner > div > div.popup-footer > ul > li:nth-child(1) > button")
+    bt = driver.find_element(By.CSS_SELECTOR,
+                             "#popupEventBanner > div > div.popup-footer > ul > li:nth-child(1) > button")
     bt.click()
 except NoSuchElementException:
     pass
@@ -52,4 +53,25 @@ for cate in depth1[0:]:
             'cate_link': b
         })
 print(category)
-time.sleep(10)
+
+for i in range(len(category)):
+    driver.execute_script(category[i]['cate_link'])
+    #
+    html = driver.page_source
+    soup = BeautifulSoup(html, "html.parser")
+    tags = soup.select("#goodsList > li:nth-child(1)")
+    for tag in tags:
+        img = tag.select_one("div.thum > a")['data-imageurl']
+        brn = tag.select_one("div.thum > a")['data-brndnm']
+        b_info = tag.select_one("div.thum > a")['data-goodsid']
+        info = "https://www.ableshop.kr/product/goods//view-goods?goodsId=" + b_info
+        product = tag.select_one("div.thum > a")['data-goodsnm']
+        sale = tag.select_one("div.info > a > p > span.discount").text if tag.select_one(
+            "div.info > a > p > span.discount") else None
+        sale_price = tag.select_one("div.info > a > p > strong").text if tag.select_one(
+            "div.info > a > p > strong") else None
+        price = tag.select_one("div.info > a > p > span.prime").text if tag.select_one(
+            "div.info > a > p > span.prime") else None
+        ins = {"img": img, "brn": brn, "info": info, "product": product, "sale": sale, "sale_price": sale_price,
+               "price": price}
+        print(ins)

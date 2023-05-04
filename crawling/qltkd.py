@@ -140,3 +140,8 @@
 #
 # now2 = datetime.datetime.now()
 # print(f"종료시간 : {now2}")
+
+
+import multiprocessing as mp
+mp.cpu_count()
+print(mp.cpu_count())
