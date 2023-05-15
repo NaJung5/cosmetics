@@ -1,22 +1,16 @@
-import time
-# import pymysql
+import pymysql
 import datetime
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
-
-# conn = { DB 영역}
-
-#  쿼리
+from common import cursor, product, findProduct
 
 # crawling start
-# now = datetime.datetime.now()
-# print(f"시작시간 : {now}")
+now = datetime.datetime.now()
+print(f"시작시간 : {now}")
 options = webdriver.ChromeOptions()
 # options.add_argument('--headless')
 options.add_argument('--no-sandbox')
@@ -31,57 +25,75 @@ wait = WebDriverWait(driver, 10)
 
 html = driver.page_source
 soup = BeautifulSoup(html, "html.parser")
-cate = soup.select_one("#mega-menu-item-9221 > a")["href"]  # mega-menu-item-9221 > a
+cate = soup.select_one("#mega-menu-item-9221 > a")["href"]
 driver.get(cate)
 html = driver.page_source
 soup = BeautifulSoup(html, "html.parser")
-cate_depth2 = soup.select(
-    "body > div > div > div > div > div > section > div > div > div > section > div > div > div > div > div > div > "
-    "ul > li> ul > li.cat-parent")
-# Depth2
-# aaqq = []
-# for cc in cate_depth2[0:]:
-#     a = cc.select_one('a').text
-#     c = cc.select_one('a')['href']
-#     aaqq.append({
-#         'Depth3': a,
-#         'run': c
-#     })
-
-# Depth3
-cate_depth3 = soup.select(
-    "body > div > div > div > div > div > section > div > div > div > section > div > div > div > div > div > div > ul > li > ul > li > ul > li")
+cate = soup.select("#mega-menu-item-8543 > ul > li > a.mega-menu-link")
 depth3 = []
-aaq = 0
 
-for cate_depth3s in cate_depth3[0:]:
-    a = cate_depth3s.select_one('a').text
-    c = cate_depth3s.select_one('a')['href']
-    if a != '전체':
-        depth3.append({
-            'depth_name': a,
-            'depth_link': c
-        })
+for cates in cate:
+    site_depth1 = cates.text
+    dp1 = cates['href']
+    depth2_elements = soup.select("#mega-menu-item-8543 > ul > li > ul > li > a")
+    for cate2s in depth2_elements:
+        site_depth2 = cate2s.text
+        site_depth2_link = cate2s['href']
+        if site_depth2 != '전체' and dp1 in site_depth2_link:
+            depth3.append({
+                'site_depth1': site_depth1,
+                'site_depth2': site_depth2,
+                'depth_link': site_depth2_link
+            })
+
 for i in range(len(depth3)):
     driver.get(depth3[i]['depth_link'])
-    time.sleep(3)
     html = driver.page_source
-    product = BeautifulSoup(html, "html.parser")
-    productCount = product.select_one("div.woocommerce-result-count > span").text.split("\n")[1].split(" ")[1]
-    tag = soup.select(
-        "body > div > div > div > div > div > section > div > div > div > section > div > div > div > div > div > div > div > div")
-    # print(tag)
-    # 추후 while로 변경
-    for j in tag[0:]:
-        src = j.select_one("div > div.product-element-top.wd-quick-shop > a > img")['src']
-        model_src = j.select_one("div > div.product-element-top.wd-quick-shop > div.hover-img > a > img")['src']
-        info = j.select_one("div > div.product-element-top.wd-quick-shop > a")['href']
-        products = j.select_one("div > div.product-element-bottom > h3 > a").text
-        price = j.select_one("div > div.product-element-bottom > span > span > bdi").text
-        ins = {
-            'src': src, 'info': info, 'model_src': model_src, 'product': products, 'price': price
-        }
-        print(ins)
-# print(f"depth3 : {depth3}")
+    soup = BeautifulSoup(html, "html.parser")
+    productCount = soup.select_one("div.woocommerce-result-count > span").text.split("\n")[1].split(" ")[
+        1] if soup.select_one("div.woocommerce-result-count > span") else 0
+    p = 2
+    k = 0
+    for j in range(int(productCount)):
+        try:
+            if k % 12 == 0 and k > 0:
+                link = driver.find_element(By.CSS_SELECTOR,
+                                           f"div.wd-loop-footer.products-footer > nav > ul > li:nth-child({p}) > a")
+                link.click()
+                html = driver.page_source
+                soup = BeautifulSoup(html, 'html.parser')
+                k = 0
+                p += 1
 
-time.sleep(10)
+        except NoSuchElementException:
+            pass
+        tag = soup.select(
+            "body > div > div > div > div > div > section > div > div > div > section"
+            " > div > div > div > div > div > div > div > div")
+        src = tag[k].select_one("div > div.product-element-top.wd-quick-shop > a > img")['src'] if tag[k].select_one(
+            "div > div.product-element-top.wd-quick-shop > a > img") else None
+
+        model_src = tag[k].select_one("div > div.product-element-top.wd-quick-shop > div.hover-img > a > img")[
+            'src'] if tag[k].select_one(
+            "div > div.product-element-top.wd-quick-shop > div.hover-img > a > img") else None
+        info = tag[k].select_one("div > div.product-element-top.wd-quick-shop > a")['href'] if tag[k].select_one(
+            "div > div.product-element-top.wd-quick-shop > a") else None
+        pro_seq = tag[k].select_one("div > div.product-element-top.wd-quick-shop > div > div > a")[
+            'data-product_id'] if tag[k].select_one(
+            "div > div.product-element-top.wd-quick-shop > div > div > a") else None
+        products = tag[k].select_one("div > div.product-element-bottom > h3 > a").text if tag[k].select_one(
+            "div > div.product-element-bottom > h3 > a") else None
+        price = tag[k].select_one("div > div.product-element-bottom > span > span > bdi").text if tag[k].select_one(
+            "div > div.product-element-bottom > span > span > bdi") else None
+        ins = {
+            'img': src, 'info': info, 'img2': model_src, 'name': products, 'price': price, "pro_seq": pro_seq,
+            "site_depth1": depth3[i]['site_depth1'], "site_depth2": depth3[i]['site_depth2'], "sold_out": "",
+            "brand_type": 'ET'
+        }
+        k += 1
+        cursor.execute(findProduct, ins)
+        comparison = cursor.fetchone()
+        product(ins=ins, comparison=comparison)
+
+end = datetime.datetime.now()
+print(f"종료시간 : {end}")
