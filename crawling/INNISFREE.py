@@ -1,26 +1,12 @@
-import datetime
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import re
-from common import cursor, product, findProduct
+from common import *
 
-# crawling start
-options = webdriver.ChromeOptions()
-# options.add_argument('--headless')
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')
-
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+driver = start_crawling()
 
 url = "https://www.innisfree.com/kr/ko/Main.do"
 driver.get(url)
-
-start = datetime.datetime.now()
-print(f"시작시간: {start}")
 
 category = []
 
@@ -43,7 +29,14 @@ for element in elements:
                 "depth2": depth2,
                 "link": link
             })
-ins = []
+
+cursor.execute(countProduct, 'IN')
+check = cursor.fetchone()
+if check['count(*)'] == 0:
+    insert = 0
+else:
+    insert = 1
+
 for i in range(len(category)):
     driver.get("https://www.innisfree.com" + category[i]['link'])
     html = driver.page_source
@@ -68,32 +61,34 @@ for i in range(len(category)):
         img = tag.select_one("span > a > img:nth-child(3)")['src'] if tag.select_one(
             "span > a > img:nth-child(3)") else None
         img2 = tag.select_one("span > a > img.over")['src'] if tag.select_one("span > a > img.over") else None
-        pro_seq = tag.select_one("span > a > span.stikerWrap")['data-stikerwrap']
+        pro_code = tag.select_one("span > a > span.stikerWrap")['data-stikerwrap']
         name = tag.select_one("a > span.name").text if tag.select_one("a > span") else None
         be_price = tag.select_one("a > p > strong.cost").text if tag.select_one("a > p > strong.cost") else None
         price = tag.select_one("a > p > strong.unit").text if tag.select_one("a > p > strong.unit") else None
         sold_out = tag.select_one("a > p > span.soldOut").text if tag.select_one("a > p > span.soldOut") else None
         info = tag.select_one("a")['href'] if tag.select_one("a") else None
+        sale = tag.select_one("a > p > span").text if tag.select_one("a > p > span") else None
         if img is not None:
             img = img.split("?")[0]
             img2 = img2.split("?")[0]
+        if be_price is not None:
+            be_price = re.sub(r"[^0-9]", "", be_price)
         if price is not None:
-            price = re.sub(r"[^0-9,]", "", price)
-
+            price = re.sub(r"[^0-9]", "", price)
+        else:
+            sale = 0
         ins = ({
-            "img": img, "img2": img2, "name": name, "pro_seq": int(pro_seq), "be_price": be_price, "price": price,
+            "img": img, "img2": img2, "name": name, "pro_code": pro_code, "be_price": be_price, "price": price,
             "info": "https://www.innisfree.com" + info, "site_depth1": category[i]['depth1'],
-            "site_depth2": category[i]['depth2'], "brand_type": 'IN', "sold_out": sold_out
+            "site_depth2": category[i]['depth2'], "brand_type": 'IN', "sold_out": sold_out,
+            "site_depth3": "", "brand": "", "sale": sale
         })
 
         cursor.execute(findProduct, ins)
         comparison = cursor.fetchone()
 
-        product(ins=ins, comparison=comparison)
+        product(ins=ins, comparison=comparison, insert=insert)
 
         j += 1
 
-driver.quit()
-cursor.close()
-end = datetime.datetime.now()
-print(f"종료시간: {end}")
+end_crawling()

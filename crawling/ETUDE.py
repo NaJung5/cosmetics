@@ -1,24 +1,11 @@
-import pymysql
-import datetime
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from common import cursor, product, findProduct
+from common import *
 
-# crawling start
-now = datetime.datetime.now()
-print(f"시작시간 : {now}")
-options = webdriver.ChromeOptions()
-# options.add_argument('--headless')
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--disable-gpu')
 
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
-
+driver = start_crawling()
 url = "https://www.etude.com/"
 driver.get(url)
 wait = WebDriverWait(driver, 10)
@@ -31,6 +18,13 @@ html = driver.page_source
 soup = BeautifulSoup(html, "html.parser")
 cate = soup.select("#mega-menu-item-8543 > ul > li > a.mega-menu-link")
 depth3 = []
+
+cursor.execute(countProduct, 'AB')
+check = cursor.fetchone()
+if check['count(*)'] == 0:
+    insert = 0
+else:
+    insert = 1
 
 for cates in cate:
     site_depth1 = cates.text
@@ -45,7 +39,6 @@ for cates in cate:
                 'site_depth2': site_depth2,
                 'depth_link': site_depth2_link
             })
-
 for i in range(len(depth3)):
     driver.get(depth3[i]['depth_link'])
     html = driver.page_source
@@ -78,22 +71,29 @@ for i in range(len(depth3)):
             "div > div.product-element-top.wd-quick-shop > div.hover-img > a > img") else None
         info = tag[k].select_one("div > div.product-element-top.wd-quick-shop > a")['href'] if tag[k].select_one(
             "div > div.product-element-top.wd-quick-shop > a") else None
-        pro_seq = tag[k].select_one("div > div.product-element-top.wd-quick-shop > div > div > a")[
+        pro_code = tag[k].select_one("div > div.product-element-top.wd-quick-shop > div > div > a")[
             'data-product_id'] if tag[k].select_one(
             "div > div.product-element-top.wd-quick-shop > div > div > a") else None
         products = tag[k].select_one("div > div.product-element-bottom > h3 > a").text if tag[k].select_one(
             "div > div.product-element-bottom > h3 > a") else None
         price = tag[k].select_one("div > div.product-element-bottom > span > span > bdi").text if tag[k].select_one(
             "div > div.product-element-bottom > span > span > bdi") else None
+        if price is not None:
+            price = re.sub(r"[^0-9]", "", price)
+        # 세일 정보 확인 되는 경우 추가
+        # if be_price is not None:
+        #     be_price = re.sub(r"[^0-9]", "", be_price)
         ins = {
-            'img': src, 'info': info, 'img2': model_src, 'name': products, 'price': price, "pro_seq": pro_seq,
-            "site_depth1": depth3[i]['site_depth1'], "site_depth2": depth3[i]['site_depth2'], "sold_out": "",
-            "brand_type": 'ET'
+            'img': src, 'info': info, 'img2': model_src, 'name': products, 'be_price': "", 'price': price,
+            "pro_code": pro_code,
+            "site_depth1": depth3[i]['site_depth1'], "site_depth2": depth3[i]['site_depth2'],
+            "site_depth3": "", "sold_out": "",
+            "brand_type": 'ET', "brand": "", "sale": ""
         }
         k += 1
         cursor.execute(findProduct, ins)
         comparison = cursor.fetchone()
-        product(ins=ins, comparison=comparison)
+        product(ins=ins, comparison=comparison, insert=insert)
 
-end = datetime.datetime.now()
-print(f"종료시간 : {end}")
+end_crawling()
+# 31527
